@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CVVC Long Vowel Teams Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #FFE4E1, #E0E6FF, #E1FFE4);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #6A5ACD, #4169E1);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .instructions {
+            background: #FFF8DC;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 10px;
+            border: 2px solid #DEB887;
+            text-align: center;
+            font-size: 1.1em;
+            color: #8B4513;
+        }
+
+        .game-area {
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .word-board {
+            flex: 2;
+            min-width: 400px;
+        }
+
+        .vowel-teams-bank {
+            flex: 1;
+            min-width: 200px;
+            background: #F0F8FF;
+            border-radius: 15px;
+            padding: 20px;
+            border: 3px solid #4169E1;
+            height: fit-content;
+        }
+
+        .words-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .word-card {
+            background: linear-gradient(145deg, #FFFACD, #F0E68C);
+            border: 3px solid #DAA520;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .word-card.completed {
+            background: linear-gradient(145deg, #98FB98, #90EE90);
+            border-color: #32CD32;
+            animation: glow 1s ease;
+        }
+
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px #32CD32; }
+            50% { box-shadow: 0 0 20px #32CD32, 0 0 30px #32CD32; }
+            100% { box-shadow: 0 0 5px #32CD32; }
+        }
+
+        .word-display {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #8B4513;
+            margin-bottom: 10px;
+        }
+
+        .vowel-slot {
+            display: inline-block;
+            min-width: 50px;
+            height: 40px;
+            background: white;
+            border: 3px dashed #FF6B6B;
+            border-radius: 8px;
+            margin: 0 2px;
+            vertical-align: middle;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .vowel-slot.filled {
+            background: #FFE4B5;
+            border: 3px solid #32CD32;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #8B4513;
+        }
+
+        .vowel-team {
+            background: linear-gradient(145deg, #FF6B6B, #FF4757);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin: 5px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+        }
+
+        .vowel-team:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+        }
+
+        .vowel-team.used {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .sorting-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .sort-buckets {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .sound-bucket {
+            background: linear-gradient(145deg, #E6E6FA, #D8BFD8);
+            border: 3px solid #9370DB;
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 200px;
+            text-align: center;
+        }
+
+        .bucket-header {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #4B0082;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #9370DB;
+        }
+
+        .bucket-words {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            min-height: 100px;
+            border: 2px dashed #9370DB;
+            border-radius: 10px;
+            padding: 15px;
+            background: rgba(255,255,255,0.3);
+        }
+
+        .sortable-word {
+            background: #FFE4B5;
+            border: 2px solid #DAA520;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #8B4513;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .sortable-word:hover {
+            transform: scale(1.05);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+        }
+
+        .sortable-word.correct-sort {
+            background: linear-gradient(145deg, #98FB98, #90EE90);
+            border-color: #32CD32;
+            animation: bounce 0.6s ease;
+        }
+
+        .sortable-word.wrong-sort {
+            animation: shake 0.6s ease;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 60%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            80% { transform: translateY(-5px); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .progress-section {
+            background: #F0F8FF;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #4169E1;
+        }
+
+        .progress-bar {
+            background: #E0E0E0;
+            height: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #4ECDC4, #44A08D);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .completion-message {
+            background: linear-gradient(145deg, #FFE4B5, #F0E68C);
+            border: 3px solid #DAA520;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .action-buttons {
+            text-align: center;
+            margin: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(145deg, #20B2AA, #008B8B);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-size: 1.2em;
+            color: white;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            .game-area {
+                flex-direction: column;
+            }
+            
+            .words-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .word-display {
+                font-size: 1.4em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1>🎯 CVVC Long Vowel Teams Game 🎯</h1>
+            <p>Fill in the missing vowel teams, then sort by sounds!</p>
+        </div>
+        
+        <div class="instructions">
+            <strong>Step 1:</strong> Drag vowel teams from the bank to fill in the missing letters in each word!<br>
+            <strong>Step 2:</strong> Once all words are complete, sort them by their vowel sounds!
+        </div>
+        
+        <div class="progress-section">
+            <div>Words Completed: <span id="completed">0</span> / <span id="totalWords">16</span></div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress"></div>
+            </div>
+        </div>
+        
+        <div class="game-area">
+            <div class="word-board">
+                <div class="words-grid" id="wordsGrid"></div>
+            </div>
+            
+            <div class="vowel-teams-bank">
+                <h3 style="text-align: center; color: #4169E1; margin-bottom: 15px;">Vowel Teams Bank</h3>
+                <div id="vowelBank"></div>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn" id="sortBtn" onclick="startSorting()" disabled>Start Sorting! 🎨</button>
+            <button class="btn" onclick="resetGame()">Reset Game 🔄</button>
+        </div>
+        
+        <div class="sorting-section" id="sortingSection">
+            <h2 style="text-align: center; color: #4B0082; margin-bottom: 20px;">🎵 Sort Words by Their Vowel Sounds! 🎵</h2>
+            <div class="sort-buckets" id="sortBuckets"></div>
+            <div id="sortableWords" style="text-align: center; margin: 20px; padding: 20px; background: #F0F8FF; border-radius: 10px; border: 2px dashed #4169E1;">
+                <h3 style="color: #4169E1; margin-bottom: 15px;">Drag these words to the correct sound buckets:</h3>
+                <div id="wordsToSort" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;"></div>
+            </div>
+        </div>
+        
+        <div class="completion-message" id="completionMessage">
+            <h2 style="color: #32CD32;">🎉 Fantastic Work! 🎉</h2>
+            <p style="font-size: 1.2em; margin: 10px 0;">You've mastered CVVC long vowel teams! Great job recognizing vowel sounds!</p>
+        </div>
+    </div>
+
+    <script>
+        const words = [
+            // Long A (ai, ay)
+            { word: 'rain', missing: 'ai', sound: 'Long A' },
+            { word: 'train', missing: 'ai', sound: 'Long A' },
+            { word: 'snail', missing: 'ai', sound: 'Long A' },
+            { word: 'paint', missing: 'ai', sound: 'Long A' },
+            
+            // Long O (oa, ow)
+            { word: 'boat', missing: 'oa', sound: 'Long O' },
+            { word: 'coat', missing: 'oa', sound: 'Long O' },
+            { word: 'float', missing: 'oa', sound: 'Long O' },
+            { word: 'soap', missing: 'oa', sound: 'Long O' },
+            
+            // Long E (ee, ea)
+            { word: 'tree', missing: 'ee', sound: 'Long E' },
+            { word: 'green', missing: 'ee', sound: 'Long E' },
+            { word: 'meat', missing: 'ea', sound: 'Long E' },
+            { word: 'leaf', missing: 'ea', sound: 'Long E' },
+            
+            // Long U (ui, oo)
+            { word: 'fruit', missing: 'ui', sound: 'Long U' },
+            { word: 'suit', missing: 'ui', sound: 'Long U' },
+            { word: 'moon', missing: 'oo', sound: 'Long U' },
+            { word: 'food', missing: 'oo', sound: 'Long U' }
+        ];
+
+        const vowelTeams = ['ai', 'oa', 'ee', 'ea', 'ui', 'oo'];
+        const sounds = ['Long A', 'Long O', 'Long E', 'Long U'];
+        
+        let completedWords = 0;
+        let selectedSlot = null;
+        let usedVowelTeams = {};
+        let sortingStarted = false;
+
+        function initGame() {
+            createWordCards();
+            createVowelBank();
+            createSortBuckets();
+            updateProgress();
+        }
+
+        function createWordCards() {
+            const grid = document.getElementById('wordsGrid');
+            grid.innerHTML = '';
+            
+            // Create a shuffled copy of the words array
+            let shuffledWords = [...words];
+            for (let i = shuffledWords.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledWords[i], shuffledWords[j]] = [shuffledWords[j], shuffledWords[i]];
+            }
+            
+            shuffledWords.forEach((wordObj, index) => {
+                const card = document.createElement('div');
+                card.className = 'word-card';
+                card.id = `word-${index}`;
+                
+                const wordDisplay = document.createElement('div');
+                wordDisplay.className = 'word-display';
+                
+                const wordParts = wordObj.word.split(wordObj.missing);
+                wordDisplay.innerHTML = wordParts[0] + '<span class="vowel-slot" onclick="selectSlot(this, ' + index + ')"></span>' + wordParts[1];
+                
+                card.appendChild(wordDisplay);
+                grid.appendChild(card);
+            });
+            
+            // Update the global words array to match the shuffled order
+            words.length = 0;
+            words.push(...shuffledWords);
+        }
+
+        function createVowelBank() {
+            const bank = document.getElementById('vowelBank');
+            bank.innerHTML = '';
+            
+            // Create multiple copies of each vowel team and mix them up
+            let allVowelTeams = [];
+            vowelTeams.forEach(team => {
+                for (let i = 0; i < 4; i++) { // 4 copies of each team
+                    allVowelTeams.push(team);
+                }
+            });
+            
+            // Shuffle the array
+            for (let i = allVowelTeams.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [allVowelTeams[i], allVowelTeams[j]] = [allVowelTeams[j], allVowelTeams[i]];
+            }
+            
+            // Create buttons in mixed order
+            allVowelTeams.forEach(team => {
+                const button = document.createElement('button');
+                button.className = 'vowel-team';
+                button.textContent = team;
+                button.onclick = () => placeVowelTeam(team, button);
+                bank.appendChild(button);
+            });
+        }
+
+        function createSortBuckets() {
+            const buckets = document.getElementById('sortBuckets');
+            buckets.innerHTML = '';
+            
+            sounds.forEach(sound => {
+                const bucket = document.createElement('div');
+                bucket.className = 'sound-bucket';
+                bucket.innerHTML = `
+                    <div class="bucket-header">${sound} Sound</div>
+                    <div class="bucket-words" id="bucket-${sound.replace(' ', '-')}" 
+                         ondrop="drop(event)" ondragover="allowDrop(event)" data-sound="${sound}"></div>
+                `;
+                buckets.appendChild(bucket);
+            });
+        }
+
+        function selectSlot(slot, wordIndex) {
+            if (slot.classList.contains('filled') || sortingStarted) return;
+            
+            // Remove previous selection
+            document.querySelectorAll('.vowel-slot').forEach(s => s.style.backgroundColor = 'white');
+            
+            // Highlight selected slot
+            slot.style.backgroundColor = '#FFE4E6';
+            selectedSlot = { element: slot, wordIndex: wordIndex };
+        }
+
+        function placeVowelTeam(team, button) {
+            if (!selectedSlot || button.classList.contains('used') || sortingStarted) return;
+            
+            const wordObj = words[selectedSlot.wordIndex];
+            
+            // Check if it's the correct vowel team
+            if (team === wordObj.missing) {
+                selectedSlot.element.textContent = team;
+                selectedSlot.element.classList.add('filled');
+                selectedSlot.element.style.backgroundColor = '#FFE4B5';
+                
+                button.classList.add('used');
+                usedVowelTeams[selectedSlot.wordIndex] = team;
+                
+                // Mark word as completed
+                const wordCard = document.getElementById(`word-${selectedSlot.wordIndex}`);
+                wordCard.classList.add('completed');
+                
+                completedWords++;
+                updateProgress();
+                
+                // Check if all words are completed
+                if (completedWords === words.length) {
+                    document.getElementById('sortBtn').disabled = false;
+                }
+                
+                selectedSlot = null;
+            } else {
+                // Wrong team - shake the slot
+                selectedSlot.element.style.animation = 'shake 0.6s ease';
+                setTimeout(() => {
+                    selectedSlot.element.style.animation = '';
+                }, 600);
+            }
+        }
+
+        function updateProgress() {
+            document.getElementById('completed').textContent = completedWords;
+            document.getElementById('totalWords').textContent = words.length;
+            const percentage = (completedWords / words.length) * 100;
+            document.getElementById('progress').style.width = percentage + '%';
+        }
+
+        function startSorting() {
+            if (completedWords !== words.length) return;
+            
+            sortingStarted = true;
+            document.getElementById('sortingSection').style.display = 'block';
+            document.getElementById('sortBtn').disabled = true;
+            
+            // Create sortable words
+            const wordsContainer = document.getElementById('wordsToSort');
+            wordsContainer.innerHTML = '';
+            
+            words.forEach((wordObj, index) => {
+                const wordElement = document.createElement('div');
+                wordElement.className = 'sortable-word';
+                wordElement.textContent = wordObj.word;
+                wordElement.draggable = true;
+                wordElement.ondragstart = (e) => drag(e, wordObj.sound);
+                wordElement.dataset.sound = wordObj.sound;
+                wordsContainer.appendChild(wordElement);
+            });
+            
+            // Scroll to sorting section
+            document.getElementById('sortingSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function drag(ev, sound) {
+            ev.dataTransfer.setData("text", ev.target.textContent);
+            ev.dataTransfer.setData("sound", sound);
+        }
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const wordText = ev.dataTransfer.getData("text");
+            const wordSound = ev.dataTransfer.getData("sound");
+            const bucket = ev.currentTarget;
+            const bucketSound = bucket.dataset.sound;
+            
+            // Find the word element
+            const wordElements = document.querySelectorAll('.sortable-word');
+            let wordElement = null;
+            wordElements.forEach(el => {
+                if (el.textContent === wordText && el.parentElement.id === 'wordsToSort') {
+                    wordElement = el;
+                }
+            });
+            
+            if (!wordElement) return;
+            
+            if (wordSound === bucketSound) {
+                // Correct sort
+                wordElement.classList.add('correct-sort');
+                bucket.appendChild(wordElement);
+                wordElement.draggable = false;
+                
+                // Check if sorting is complete
+                setTimeout(() => {
+                    if (document.getElementById('wordsToSort').children.length === 0) {
+                        document.getElementById('completionMessage').style.display = 'block';
+                        document.getElementById('completionMessage').scrollIntoView({ behavior: 'smooth' });
+                    }
+                }, 500);
+            } else {
+                // Wrong sort
+                wordElement.classList.add('wrong-sort');
+                setTimeout(() => {
+                    wordElement.classList.remove('wrong-sort');
+                }, 600);
+            }
+        }
+
+        function resetGame() {
+            completedWords = 0;
+            selectedSlot = null;
+            usedVowelTeams = {};
+            sortingStarted = false;
+            
+            document.getElementById('sortingSection').style.display = 'none';
+            document.getElementById('completionMessage').style.display = 'none';
+            document.getElementById('sortBtn').disabled = true;
+            
+            // Clear all word cards
+            document.querySelectorAll('.word-card').forEach(card => {
+                card.classList.remove('completed');
+            });
+            
+            // Clear all slots
+            document.querySelectorAll('.vowel-slot').forEach(slot => {
+                slot.classList.remove('filled');
+                slot.textContent = '';
+                slot.style.backgroundColor = 'white';
+            });
+            
+            // Reset vowel bank
+            document.querySelectorAll('.vowel-team').forEach(btn => {
+                btn.classList.remove('used');
+            });
+            
+            updateProgress();
+        }
+
+        // Initialize the game
+        initGame();
+    </script>
+</body>
+</html>
